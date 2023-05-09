@@ -12,8 +12,8 @@ import java.time.Year
 open class Document {
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
-    @Column(name = "idDocument", nullable = false)
-    open var idDocument: Int? = null
+    @Column(name = "id", unique = true, nullable = false)
+    open var id: Int? = null
 
     @Column(name = "amount", nullable = false)
     open var amount: Int? = null
@@ -29,11 +29,11 @@ open class Document {
     open var file: Blob? = null
 
     @ManyToOne(optional = false)
-    @JoinColumn(name = "User_idUser", nullable = false)
+    @JoinColumn(name = "id_user", nullable = false)
     open var user: User? = null
 
     @ManyToOne(optional = false)
-    @JoinColumn(name = "Tag_idTag", nullable = false)
+    @JoinColumn(name = "id_tag", nullable = false)
     open var tag: Tag? = null
 
     override fun equals(other: Any?): Boolean {
@@ -41,7 +41,7 @@ open class Document {
         if (other == null || Hibernate.getClass(this) != Hibernate.getClass(other)) return false
         other as Document
 
-        return idDocument != null && idDocument == other.idDocument
+        return id != null && id == other.id
     }
 
     override fun hashCode(): Int = javaClass.hashCode()

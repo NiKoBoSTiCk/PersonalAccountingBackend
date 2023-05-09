@@ -9,16 +9,13 @@ import lombok.Data
 open class User {
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
-    @Column(name = "idUser", nullable = false)
-    open var idUser: Int? = null
+    @Column(name = "id", unique = true, nullable = false)
+    open var id: Int? = null
 
-    @Column(name = "name", nullable = false, length = 50)
-    open var name: String? = null
+    @Column(name = "username", unique = true, nullable = false, length = 50)
+    open var username: String? = null
 
-    @Column(name = "surname", nullable = false, length = 50)
-    open var surname: String? = null
-
-    @Column(name = "email", nullable = false, length = 320)
+    @Column(name = "email", unique = true, nullable = false, length = 320)
     open var email: String? = null
 
     @OneToMany(mappedBy = "user", cascade = [CascadeType.ALL], orphanRemoval = true)

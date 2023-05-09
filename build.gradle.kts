@@ -36,6 +36,8 @@ dependencies {
     implementation("com.google.cloud:spring-cloud-gcp-starter-pubsub")
     implementation("com.google.cloud:spring-cloud-gcp-starter-storage")
     implementation("org.jetbrains.kotlin:kotlin-reflect")
+    implementation("org.springframework.boot:spring-boot-starter-security:3.0.4")
+    implementation("org.keycloak:keycloak-spring-security-adapter:21.1.1")
     developmentOnly("org.springframework.boot:spring-boot-devtools")
     runtimeOnly("com.h2database:h2")
     runtimeOnly("com.mysql:mysql-connector-j")

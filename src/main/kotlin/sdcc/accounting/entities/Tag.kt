@@ -9,11 +9,11 @@ import lombok.Data
 open class Tag {
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
-    @Column(name = "idTag", nullable = false)
-    open var idTag: Int? = null
+    @Column(name = "id", unique = true, nullable = false)
+    open var id: Int? = null
 
     @Enumerated(EnumType.STRING)
-    @Column(name = "tag", nullable = false)
+    @Column(name = "tag", unique = true, nullable = false)
     open var tag: ETag? = null
 
     @OneToMany(mappedBy = "tag", cascade = [CascadeType.ALL], orphanRemoval = true)

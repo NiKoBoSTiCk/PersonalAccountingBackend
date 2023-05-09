@@ -7,6 +7,9 @@ import java.time.Year
 data class DocumentRequest(
 
     @NotNull
+    var id: Int,
+
+    @NotNull
     var email: String,
 
     @NotNull
