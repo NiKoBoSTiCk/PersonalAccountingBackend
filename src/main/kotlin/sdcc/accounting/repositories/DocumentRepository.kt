@@ -9,6 +9,8 @@ import java.time.Year
 
 @Repository
 interface DocumentRepository : JpaRepository<Document, Int> {
+
     fun removeDocumentById(id: Int): Document?
+
     fun findDocumentsByUserEqualsAndYearEqualsAndTagEquals(user: User, year: Year, tag: Tag): List<Document>?
 }
