@@ -1,4 +1,4 @@
-package sdcc.accounting.repositories;
+package sdcc.accounting.repositories
 
 import org.springframework.data.jpa.repository.JpaRepository
 import org.springframework.stereotype.Repository
@@ -10,7 +10,13 @@ import java.time.Year
 @Repository
 interface DocumentRepository : JpaRepository<Document, Int> {
 
-    fun removeDocumentById(id: Int): Document?
+    fun removeById(id: Int): Document?
 
-    fun findDocumentsByUserEqualsAndYearEqualsAndTagEquals(user: User, year: Year, tag: Tag): List<Document>?
+    fun findAllByUser(user: User): Set<Document>?
+
+    fun findAllByUserAndTag(user: User, tag: Tag): Set<Document>?
+
+    fun findAllByUserAndYear(user: User, year: Year): Set<Document>?
+
+    fun findAllByUserAndYearAndTag(user: User, year: Year, tag: Tag): Set<Document>?
 }

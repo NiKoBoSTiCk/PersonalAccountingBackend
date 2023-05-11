@@ -1,5 +1,6 @@
 package sdcc.accounting.entities
 
+import com.fasterxml.jackson.annotation.JsonIgnore
 import jakarta.persistence.*
 import lombok.Data
 
@@ -7,6 +8,7 @@ import lombok.Data
 @Table(name = "User", schema = "sdcc")
 @Data
 open class User {
+
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
     @Column(name = "id", unique = true, nullable = false)
@@ -18,6 +20,11 @@ open class User {
     @Column(name = "email", unique = true, nullable = false, length = 320)
     open var email: String? = null
 
+    @Column(name = "password", nullable = false)
+    @JsonIgnore
+    open var password: String? = null
+
     @OneToMany(mappedBy = "user", cascade = [CascadeType.ALL], orphanRemoval = true)
-    open var documents: MutableList<Document> = mutableListOf()
+    @JsonIgnore
+    open var documents: MutableSet<Document> = mutableSetOf()
 }
