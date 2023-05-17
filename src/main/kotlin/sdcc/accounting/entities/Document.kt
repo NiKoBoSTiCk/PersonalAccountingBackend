@@ -1,14 +1,12 @@
 package sdcc.accounting.entities
 
 import jakarta.persistence.*
-import lombok.Data
 import org.hibernate.Hibernate
 import java.sql.Blob
 import java.time.Year
 
 @Entity
 @Table(name = "Document", schema = "sdcc")
-@Data
 open class Document {
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)

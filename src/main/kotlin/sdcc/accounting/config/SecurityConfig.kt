@@ -26,7 +26,7 @@ class SecurityConfig (
         // Define public and private routes
         http.authorizeHttpRequests()
             .requestMatchers(HttpMethod.POST, "/auth/login").permitAll()
-            .requestMatchers(HttpMethod.POST, "/auth/register").permitAll()
+            .requestMatchers(HttpMethod.POST, "/auth/signup").permitAll()
             .requestMatchers("/auth/**").authenticated()
             .anyRequest().permitAll() // In case you have a frontend
 

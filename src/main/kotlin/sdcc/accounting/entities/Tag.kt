@@ -2,11 +2,9 @@ package sdcc.accounting.entities
 
 import com.fasterxml.jackson.annotation.JsonIgnore
 import jakarta.persistence.*
-import lombok.Data
 
 @Entity
 @Table(name = "Tag", schema = "sdcc")
-@Data
 open class Tag {
 
     @Id

@@ -35,7 +35,7 @@ class DocumentService(
     fun removeDocument(user: User, doc: DocumentRequest) {
         val document = documentRepository.findById(doc.getId())
         if (document.isEmpty) throw DocumentNotFoundException()
-        if (document.get().user?.email != user.email) throw DocumentNotFoundException()
+        if (document.get().user?.id != user.id) throw DocumentNotFoundException()
         documentRepository.removeById(doc.getId())?: throw DocumentNotFoundException()
     }
 
@@ -44,7 +44,7 @@ class DocumentService(
     fun updateDocument(user: User, doc: DocumentRequest) {
         val document = documentRepository.findById(doc.getId())
         if (document.isEmpty) throw DocumentNotFoundException()
-        if (document.get().user?.email != user.email) throw DocumentNotFoundException()
+        if (document.get().user?.id != user.id) throw DocumentNotFoundException()
         val newDoc = documentRepository.removeById(doc.getId())?: throw DocumentNotFoundException()
         newDoc.user = user
         newDoc.tag = tagRepository.findByTag(enumValueOf(doc.getTag()))?: throw TagNotFoundException()
