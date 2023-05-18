@@ -3,7 +3,6 @@ package sdcc.accounting.entities
 import jakarta.persistence.*
 import org.hibernate.Hibernate
 import java.sql.Blob
-import java.time.Year
 
 @Entity
 @Table(name = "Document", schema = "sdcc")
@@ -20,7 +19,7 @@ open class Document {
     open var description: String? = null
 
     @Column(name = "year", nullable = false)
-    open var year: Year? = null
+    open var year: Int? = null
 
     @Lob
     @Column(name = "file", nullable = false)

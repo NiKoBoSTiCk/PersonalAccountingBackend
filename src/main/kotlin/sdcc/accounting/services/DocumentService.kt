@@ -4,12 +4,10 @@ import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
 import sdcc.accounting.entities.Document
 import sdcc.accounting.entities.User
-import sdcc.accounting.payloads.requests.DocumentRequest
+import sdcc.accounting.exceptions.*
 import sdcc.accounting.repositories.DocumentRepository
 import sdcc.accounting.repositories.TagRepository
-import sdcc.accounting.exceptions.DocumentNotFoundException
-import sdcc.accounting.exceptions.TagNotFoundException
-import java.time.Year
+import java.sql.Blob
 
 @Service
 class DocumentService(
@@ -18,41 +16,43 @@ class DocumentService(
 ) {
 
     @Transactional
-    @Throws(TagNotFoundException::class)
-    fun addDocument(user: User, doc: DocumentRequest) {
-        val newDoc = Document()
-        newDoc.user = user
-        newDoc.tag = tagRepository.findByTag(enumValueOf(doc.getTag()))?: throw TagNotFoundException()
-        newDoc.amount = doc.getAmount()
-        newDoc.description = doc.getDescription()
-        newDoc.file = doc.getFile()
-        newDoc.year = doc.getYear()
-        documentRepository.save(newDoc)
+    @Throws(
+        TagNotFoundException::class, InvalidUserException::class, InvalidTagException::class,
+        YearNotValidException::class, NegativeAmountException::class, NullDocumentException::class
+    )
+    fun addDocument(user: User, doc: Document) {
+        if (doc.user?.id != user.id) throw InvalidUserException()
+        if (!tagRepository.existsByTag(doc.tag?.tag!!)) throw InvalidTagException()
+        if (doc.amount!! < 0) throw NegativeAmountException()
+        if (doc.year!! < 0) throw YearNotValidException()
+        if (doc.file !is Blob) throw NullDocumentException()
+        documentRepository.save(doc)
     }
 
     @Transactional
-    @Throws(DocumentNotFoundException::class)
-    fun removeDocument(user: User, doc: DocumentRequest) {
-        val document = documentRepository.findById(doc.getId())
-        if (document.isEmpty) throw DocumentNotFoundException()
-        if (document.get().user?.id != user.id) throw DocumentNotFoundException()
-        documentRepository.removeById(doc.getId())?: throw DocumentNotFoundException()
+    @Throws(DocumentNotFoundException::class, InvalidUserException::class)
+    fun removeDocument(user: User, id: Int) {
+        if (!documentRepository.existsById(id)) throw DocumentNotFoundException()
+        val document = documentRepository.findById(id).get()
+        if (document.user?.id != user.id) throw InvalidUserException()
+        documentRepository.removeById(id)
     }
 
     @Transactional
-    @Throws(TagNotFoundException::class, DocumentNotFoundException::class)
-    fun updateDocument(user: User, doc: DocumentRequest) {
-        val document = documentRepository.findById(doc.getId())
-        if (document.isEmpty) throw DocumentNotFoundException()
-        if (document.get().user?.id != user.id) throw DocumentNotFoundException()
-        val newDoc = documentRepository.removeById(doc.getId())?: throw DocumentNotFoundException()
-        newDoc.user = user
-        newDoc.tag = tagRepository.findByTag(enumValueOf(doc.getTag()))?: throw TagNotFoundException()
-        newDoc.amount = doc.getAmount()
-        newDoc.description = doc.getDescription()
-        newDoc.file = doc.getFile()
-        newDoc.year = doc.getYear()
-        documentRepository.save(newDoc)
+    @Throws(
+        TagNotFoundException::class, DocumentNotFoundException::class, YearNotValidException::class,
+        NegativeAmountException::class, InvalidUserException::class, NullDocumentException::class
+    )
+    fun updateDocument(user: User, doc: Document) {
+        if (doc.user?.id != user.id) throw InvalidUserException()
+        if (!tagRepository.existsByTag(doc.tag?.tag!!)) throw TagNotFoundException()
+        if (!documentRepository.existsById(doc.id!!)) throw DocumentNotFoundException()
+        val document = documentRepository.findById(doc.id!!).get()
+        if (document.id != doc.id!!) throw DocumentNotFoundException()
+        if (doc.amount!! < 0) throw NegativeAmountException()
+        if (doc.year!! < 0) throw YearNotValidException()
+        if (doc.file !is Blob) throw NullDocumentException()
+        documentRepository.save(doc)
     }
 
     @Transactional
@@ -68,13 +68,13 @@ class DocumentService(
     }
 
     @Transactional
-    fun showDocumentsByYear(user: User, year: Year): Set<Document>? {
+    fun showDocumentsByYear(user: User, year: Int): Set<Document>? {
         return documentRepository.findAllByUserAndYear(user, year)
     }
 
     @Transactional
     @Throws(TagNotFoundException::class)
-    fun showDocumentsByYearAndTag(user: User, year: Year, tag: String): Set<Document>? {
+    fun showDocumentsByYearAndTag(user: User, year: Int, tag: String): Set<Document>? {
         val validTag = tagRepository.findByTag(enumValueOf(tag))?: throw TagNotFoundException()
         return documentRepository.findAllByUserAndYearAndTag(user, year, validTag)
     }

@@ -13,7 +13,12 @@ class GlobalExceptionHandler {
         TagNotFoundException::class,
         DocumentNotFoundException::class,
         LoginFailedException::class,
-        UserAlreadyExistException::class
+        UserAlreadyExistException::class,
+        InvalidTagException::class,
+        InvalidUserException::class,
+        NegativeAmountException::class,
+        NullDocumentException::class,
+        YearNotValidException::class
     )
     fun handleException(ex: Exception): ResponseEntity<Any> {
         if (ex is UserNotFoundException)
@@ -24,8 +29,17 @@ class GlobalExceptionHandler {
             return ResponseEntity.notFound().build()
         if (ex is LoginFailedException)
             return ResponseEntity.status(401).build()
-        return if (ex is UserAlreadyExistException)
-            ResponseEntity.badRequest().build()
+        if (ex is UserAlreadyExistException)
+            return ResponseEntity.badRequest().build()
+        if (ex is InvalidTagException)
+            return ResponseEntity.badRequest().build()
+        if (ex is InvalidUserException)
+            return ResponseEntity.badRequest().build()
+        if (ex is NegativeAmountException)
+            return ResponseEntity.badRequest().build()
+        if (ex is NullDocumentException)
+            return ResponseEntity.badRequest().build()
+        return if (ex is YearNotValidException) ResponseEntity.badRequest().build()
         else ResponseEntity.internalServerError().body(ex.stackTrace)
     }
 }

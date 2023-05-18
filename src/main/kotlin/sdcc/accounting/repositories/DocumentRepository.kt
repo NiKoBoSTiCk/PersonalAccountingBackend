@@ -5,7 +5,6 @@ import org.springframework.stereotype.Repository
 import sdcc.accounting.entities.Document
 import sdcc.accounting.entities.Tag
 import sdcc.accounting.entities.User
-import java.time.Year
 
 @Repository
 interface DocumentRepository : JpaRepository<Document, Int> {
@@ -16,7 +15,7 @@ interface DocumentRepository : JpaRepository<Document, Int> {
 
     fun findAllByUserAndTag(user: User, tag: Tag): Set<Document>?
 
-    fun findAllByUserAndYear(user: User, year: Year): Set<Document>?
+    fun findAllByUserAndYear(user: User, year: Int): Set<Document>?
 
-    fun findAllByUserAndYearAndTag(user: User, year: Year, tag: Tag): Set<Document>?
+    fun findAllByUserAndYearAndTag(user: User, year: Int, tag: Tag): Set<Document>?
 }

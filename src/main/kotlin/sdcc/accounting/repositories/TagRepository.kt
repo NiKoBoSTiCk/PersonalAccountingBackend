@@ -7,4 +7,6 @@ import sdcc.accounting.entities.Tag
 interface TagRepository : JpaRepository<Tag, Int> {
 
     fun findByTag(tag: ETag): Tag?
+
+    fun existsByTag(tag: ETag): Boolean
 }
