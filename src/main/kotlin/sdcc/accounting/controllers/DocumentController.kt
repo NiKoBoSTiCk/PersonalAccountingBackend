@@ -59,8 +59,7 @@ class DocumentController(private val documentService: DocumentService) {
 
     @GetMapping("/by_year_and_tag")
     @Throws(TagNotFoundException::class)
-    fun getDocumentsByYearAndTag(auth: Authentication,
-                                 @RequestParam(value = "year") year: Int,
+    fun getDocumentsByYearAndTag(auth: Authentication, @RequestParam(value = "year") year: Int,
                                  @RequestParam(value = "tag") tag: String) : ResponseEntity<Any> {
         val authUser = auth.toUser()
         return ResponseEntity.ok(documentService.showDocumentsByYearAndTag(authUser, year, tag))

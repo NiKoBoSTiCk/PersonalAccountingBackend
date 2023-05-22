@@ -7,7 +7,7 @@ import sdcc.accounting.entities.User
 import sdcc.accounting.exceptions.*
 import sdcc.accounting.repositories.DocumentRepository
 import sdcc.accounting.repositories.TagRepository
-import java.sql.Blob
+import java.time.LocalDate
 
 @Service
 class DocumentService(
@@ -18,14 +18,14 @@ class DocumentService(
     @Transactional
     @Throws(
         TagNotFoundException::class, InvalidUserException::class, InvalidTagException::class,
-        YearNotValidException::class, NegativeAmountException::class, NullDocumentException::class
+        YearNotValidException::class, NegativeAmountException::class
     )
     fun addDocument(user: User, doc: Document) {
         if (doc.user?.id != user.id) throw InvalidUserException()
         if (!tagRepository.existsByTag(doc.tag?.tag!!)) throw InvalidTagException()
         if (doc.amount!! < 0) throw NegativeAmountException()
         if (doc.year!! < 0) throw YearNotValidException()
-        if (doc.file !is Blob) throw NullDocumentException()
+        if (doc.year!! > LocalDate.now().year) throw YearNotValidException()
         documentRepository.save(doc)
     }
 
@@ -41,7 +41,7 @@ class DocumentService(
     @Transactional
     @Throws(
         TagNotFoundException::class, DocumentNotFoundException::class, YearNotValidException::class,
-        NegativeAmountException::class, InvalidUserException::class, NullDocumentException::class
+        NegativeAmountException::class, InvalidUserException::class
     )
     fun updateDocument(user: User, doc: Document) {
         if (doc.user?.id != user.id) throw InvalidUserException()
@@ -51,7 +51,7 @@ class DocumentService(
         if (document.id != doc.id!!) throw DocumentNotFoundException()
         if (doc.amount!! < 0) throw NegativeAmountException()
         if (doc.year!! < 0) throw YearNotValidException()
-        if (doc.file !is Blob) throw NullDocumentException()
+        if (doc.year!! > LocalDate.now().year) throw YearNotValidException()
         documentRepository.save(doc)
     }
 
@@ -68,13 +68,18 @@ class DocumentService(
     }
 
     @Transactional
+    @Throws(YearNotValidException::class)
     fun showDocumentsByYear(user: User, year: Int): Set<Document>? {
+        if (year < 0) throw YearNotValidException()
+        if (year > LocalDate.now().year) throw YearNotValidException()
         return documentRepository.findAllByUserAndYear(user, year)
     }
 
     @Transactional
-    @Throws(TagNotFoundException::class)
+    @Throws(TagNotFoundException::class,YearNotValidException::class)
     fun showDocumentsByYearAndTag(user: User, year: Int, tag: String): Set<Document>? {
+        if (year < 0) throw YearNotValidException()
+        if (year > LocalDate.now().year) throw YearNotValidException()
         val validTag = tagRepository.findByTag(enumValueOf(tag))?: throw TagNotFoundException()
         return documentRepository.findAllByUserAndYearAndTag(user, year, validTag)
     }

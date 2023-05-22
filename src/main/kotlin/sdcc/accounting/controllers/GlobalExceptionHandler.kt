@@ -17,7 +17,6 @@ class GlobalExceptionHandler {
         InvalidTagException::class,
         InvalidUserException::class,
         NegativeAmountException::class,
-        NullDocumentException::class,
         YearNotValidException::class
     )
     fun handleException(ex: Exception): ResponseEntity<Any> {
@@ -37,9 +36,9 @@ class GlobalExceptionHandler {
             return ResponseEntity.badRequest().build()
         if (ex is NegativeAmountException)
             return ResponseEntity.badRequest().build()
-        if (ex is NullDocumentException)
+        if (ex is YearNotValidException)
             return ResponseEntity.badRequest().build()
-        return if (ex is YearNotValidException) ResponseEntity.badRequest().build()
-        else ResponseEntity.internalServerError().body(ex.stackTrace)
+        else
+            return ResponseEntity.internalServerError().body(ex.stackTrace)
     }
 }
