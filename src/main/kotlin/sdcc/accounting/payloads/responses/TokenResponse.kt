@@ -1,5 +1,8 @@
 package sdcc.accounting.payloads.responses
 
-data class TokenResponse(
-    val token: String
-)
+class TokenResponse(
+    var accessToken: String,
+    var id: Int,
+    var username: String,
+    var email: String,
+) { var tokenType = "Bearer" }

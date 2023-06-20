@@ -27,7 +27,12 @@ class AuthController(
     fun login(@RequestBody payload: LoginRequest): TokenResponse {
         val user = userRepository.findByEmail(payload.email)?: throw LoginFailedException()
         if (!hashService.checkBcrypt(payload.password, user.password!!)) throw LoginFailedException()
-        return TokenResponse(tokenService.createToken(user))
+        return TokenResponse(
+            tokenService.createToken(user),
+            user.id!!,
+            user.username!!,
+            user.email!!
+        )
     }
 
     @PostMapping("/signup")
@@ -40,6 +45,11 @@ class AuthController(
         user.email = payload.email
         user.password = hashService.hashBcrypt(payload.password)
         val savedUser = userRepository.save(user)
-        return TokenResponse(tokenService.createToken(savedUser))
+        return TokenResponse(
+            tokenService.createToken(savedUser),
+            savedUser.id!!,
+            savedUser.username!!,
+            savedUser.email!!
+        )
     }
 }
