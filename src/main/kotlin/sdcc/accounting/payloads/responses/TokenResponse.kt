@@ -1,7 +1,7 @@
 package sdcc.accounting.payloads.responses
 
-class TokenResponse(
-    var accessToken: String,
+data class TokenResponse(
+    var token: String,
     var id: Int,
     var username: String,
     var email: String,
