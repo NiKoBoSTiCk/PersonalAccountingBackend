@@ -1,16 +1,24 @@
-package sdcc.accounting.entities
+package sdcc.accounting.model
 
 import jakarta.persistence.*
 import org.hibernate.Hibernate
 import java.sql.Blob
 
 @Entity
-@Table(name = "Document", schema = "sdcc")
+@Table(name = "document", schema = "sdcc")
 open class Document {
+
     @Id
-    @GeneratedValue(strategy = GenerationType.AUTO)
-    @Column(name = "id", unique = true, nullable = false)
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Column(name = "id", updatable = false, unique = true, nullable = false)
     open var id: Int? = null
+
+    @ManyToOne
+    @JoinColumn(name = "id_user", nullable = false)
+    open var user: User? = null
+
+    @Column(name = "name", unique = true, nullable = false)
+    open var name: String? = null
 
     @Column(name = "amount", nullable = false)
     open var amount: Int? = null
@@ -22,16 +30,12 @@ open class Document {
     open var year: Int? = null
 
     @Lob
-    @Column(name = "file", nullable = false)
+    @Column(name = "file", nullable = false, columnDefinition = "blob")
     open var file: Blob? = null
 
-    @ManyToOne(optional = false)
-    @JoinColumn(name = "id_user", nullable = false)
-    open var user: User? = null
-
-    @ManyToOne(optional = false)
-    @JoinColumn(name = "id_tag", nullable = false)
-    open var tag: Tag? = null
+    @Enumerated(EnumType.STRING)
+    @Column(name = "tag", nullable = false)
+    open var tag: ETag? = null
 
     override fun equals(other: Any?): Boolean {
         if (this === other) return true

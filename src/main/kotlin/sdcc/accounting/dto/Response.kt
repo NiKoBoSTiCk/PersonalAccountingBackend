@@ -1,8 +1,7 @@
-package sdcc.accounting.payloads.responses
+package sdcc.accounting.dto
 
-data class TokenResponse(
+data class TokenDto(
     var token: String,
-    var id: Int,
     var username: String,
     var email: String,
 ) { var tokenType = "Bearer" }

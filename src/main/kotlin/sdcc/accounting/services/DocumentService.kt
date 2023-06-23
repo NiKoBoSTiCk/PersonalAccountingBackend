@@ -1,32 +1,45 @@
 package sdcc.accounting.services
 
+import jakarta.persistence.EntityManagerFactory
+import org.hibernate.Session
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
-import sdcc.accounting.entities.Document
-import sdcc.accounting.entities.User
+import org.springframework.web.multipart.MultipartFile
+import sdcc.accounting.dto.DocumentDto
+import sdcc.accounting.model.Document
+import sdcc.accounting.model.ETag
+import sdcc.accounting.model.User
 import sdcc.accounting.exceptions.*
 import sdcc.accounting.repositories.DocumentRepository
-import sdcc.accounting.repositories.TagRepository
 import java.time.LocalDate
 
 @Service
 class DocumentService(
     private val documentRepository: DocumentRepository,
-    private val tagRepository: TagRepository
+    private val entityManagerFactory: EntityManagerFactory
 ) {
 
     @Transactional
-    @Throws(
-        TagNotFoundException::class, InvalidUserException::class, InvalidTagException::class,
-        YearNotValidException::class, NegativeAmountException::class
-    )
-    fun addDocument(user: User, doc: Document) {
-        if (doc.user?.id != user.id) throw InvalidUserException()
-        if (!tagRepository.existsByTag(doc.tag?.tag!!)) throw InvalidTagException()
-        if (doc.amount!! < 0) throw NegativeAmountException()
-        if (doc.year!! < 0) throw YearNotValidException()
-        if (doc.year!! > LocalDate.now().year) throw YearNotValidException()
-        documentRepository.save(doc)
+    fun addDocument(user: User, docInfo: DocumentDto, docFile: MultipartFile) {
+        if (documentRepository.existsByName(docInfo.name)) throw DocumentAlreadyExistsException()
+        var checkTag = false
+        for (tag in ETag.values())
+            if (ETag.valueOf(docInfo.tag) == tag) checkTag = true
+        if (!checkTag) throw TagNotFoundException()
+        if (docInfo.amount < 0) throw NegativeAmountException()
+        if (docInfo.year < 0) throw YearNotValidException()
+        if (docInfo.year > LocalDate.now().year) throw YearNotValidException()
+
+        val newDoc = Document()
+        newDoc.name = docInfo.name
+        newDoc.user = user
+        newDoc.amount = docInfo.amount
+        newDoc.year = docInfo.year
+        newDoc.description = docInfo.description
+        newDoc.tag = ETag.valueOf(docInfo.tag)
+        val session = entityManagerFactory.createEntityManager().delegate as Session
+        newDoc.file = session.lobHelper.createBlob(docFile.inputStream, docFile.size)
+        documentRepository.save(newDoc)
     }
 
     @Transactional
@@ -45,7 +58,6 @@ class DocumentService(
     )
     fun updateDocument(user: User, doc: Document) {
         if (doc.user?.id != user.id) throw InvalidUserException()
-        if (!tagRepository.existsByTag(doc.tag?.tag!!)) throw TagNotFoundException()
         if (!documentRepository.existsById(doc.id!!)) throw DocumentNotFoundException()
         val document = documentRepository.findById(doc.id!!).get()
         if (document.id != doc.id!!) throw DocumentNotFoundException()
@@ -62,25 +74,19 @@ class DocumentService(
 
     @Transactional
     @Throws(TagNotFoundException::class)
-    fun showDocumentsByTag(user: User, tag: String): Set<Document>? {
-        val validTag = tagRepository.findByTag(enumValueOf(tag))?: throw TagNotFoundException()
-        return documentRepository.findAllByUserAndTag(user, validTag)
+    fun showDocumentsByTag(user: User, tag: String){
+        //TODO
     }
 
     @Transactional
     @Throws(YearNotValidException::class)
-    fun showDocumentsByYear(user: User, year: Int): Set<Document>? {
-        if (year < 0) throw YearNotValidException()
-        if (year > LocalDate.now().year) throw YearNotValidException()
-        return documentRepository.findAllByUserAndYear(user, year)
+    fun showDocumentsByYear(user: User, year: Int){
+        //TODO
     }
 
     @Transactional
     @Throws(TagNotFoundException::class,YearNotValidException::class)
-    fun showDocumentsByYearAndTag(user: User, year: Int, tag: String): Set<Document>? {
-        if (year < 0) throw YearNotValidException()
-        if (year > LocalDate.now().year) throw YearNotValidException()
-        val validTag = tagRepository.findByTag(enumValueOf(tag))?: throw TagNotFoundException()
-        return documentRepository.findAllByUserAndYearAndTag(user, year, validTag)
+    fun showDocumentsByYearAndTag(user: User, year: Int, tag: String){
+        //TODO
     }
 }

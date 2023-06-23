@@ -23,36 +23,29 @@ class SecurityConfig (
 ) {
     @Bean
     fun filterChain(http: HttpSecurity): SecurityFilterChain {
-        // Define public and private routes
         http.authorizeHttpRequests()
-            .requestMatchers(HttpMethod.POST, "/auth/login").permitAll()
-            .requestMatchers(HttpMethod.POST, "/auth/signup").permitAll()
-            .requestMatchers("/auth/**").authenticated()
-            .anyRequest().permitAll() // In case you have a frontend
-
-        // Configure JWT
+            .requestMatchers(HttpMethod.POST, "/api/login").permitAll()
+            .requestMatchers(HttpMethod.POST, "/api/signup").permitAll()
+//            .requestMatchers("/api/**").authenticated()
+            .anyRequest().permitAll()
         http.oauth2ResourceServer().jwt()
         http.authenticationManager { auth ->
             val jwt = auth as BearerTokenAuthenticationToken
             val user = tokenService.parseToken(jwt.token) ?: throw InvalidBearerTokenException("Invalid token")
             UsernamePasswordAuthenticationToken(user, "", listOf(SimpleGrantedAuthority("USER")))
         }
-
-        // Other configuration
         http.cors()
         http.sessionManagement().sessionCreationPolicy(SessionCreationPolicy.STATELESS)
         http.csrf().disable()
         http.headers().frameOptions().disable()
         http.headers().xssProtection().disable()
-
         return http.build()
     }
 
     @Bean
     fun corsConfigurationSource(): CorsConfigurationSource {
-        // allow localhost for dev purposes
         val configuration = CorsConfiguration()
-        configuration.allowedOrigins = listOf("http://localhost:4200")
+        configuration.allowedOrigins = listOf("*", "http://localhost:4200")
         configuration.allowedMethods = listOf("GET", "POST", "PUT", "DELETE")
         configuration.allowedHeaders = listOf("authorization", "content-type")
         val source = UrlBasedCorsConfigurationSource()

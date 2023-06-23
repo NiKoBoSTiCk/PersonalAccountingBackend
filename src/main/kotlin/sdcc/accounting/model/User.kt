@@ -1,15 +1,15 @@
-package sdcc.accounting.entities
+package sdcc.accounting.model
 
 import com.fasterxml.jackson.annotation.JsonIgnore
 import jakarta.persistence.*
 
 @Entity
-@Table(name = "User", schema = "sdcc")
+@Table(name = "user", schema = "sdcc")
 open class User {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.AUTO)
-    @Column(name = "id", unique = true, nullable = false)
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Column(name = "id", updatable = false, unique = true, nullable = false)
     open var id: Int? = null
 
     @Column(name = "username", unique = true, nullable = false, length = 50)
@@ -21,8 +21,4 @@ open class User {
     @Column(name = "password", nullable = false)
     @JsonIgnore
     open var password: String? = null
-
-    @OneToMany(mappedBy = "user", cascade = [CascadeType.ALL], orphanRemoval = true)
-    @JsonIgnore
-    open var documents: MutableSet<Document> = mutableSetOf()
 }

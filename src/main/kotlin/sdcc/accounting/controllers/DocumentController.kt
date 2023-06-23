@@ -3,22 +3,25 @@ package sdcc.accounting.controllers
 import org.springframework.http.ResponseEntity
 import org.springframework.security.core.Authentication
 import org.springframework.web.bind.annotation.*
+import org.springframework.web.multipart.MultipartFile
 import sdcc.accounting.services.DocumentService
 import sdcc.accounting.config.toUser
-import sdcc.accounting.entities.Document
-import sdcc.accounting.exceptions.DocumentNotFoundException
-import sdcc.accounting.exceptions.TagNotFoundException
+import sdcc.accounting.dto.DocumentDto
+import sdcc.accounting.model.Document
+import sdcc.accounting.exceptions.*
 import kotlin.jvm.Throws
 
 @RestController
-@RequestMapping("/documents")
+@RequestMapping("/api/documents")
 class DocumentController(private val documentService: DocumentService) {
 
-    @PostMapping
-    @Throws(TagNotFoundException::class)
-    fun create(auth: Authentication, @RequestBody payload: Document): ResponseEntity<Any> {
-        val authUser = auth.toUser()
-        documentService.addDocument(authUser, payload)
+    @PostMapping(consumes = ["multipart/form-data"])
+    @Throws(InvalidTagException::class, YearNotValidException::class, NegativeAmountException::class)
+    fun create(auth: Authentication,
+               @RequestPart("docInfo") docInfo: DocumentDto,
+               @RequestPart("docFile") docFile: MultipartFile): ResponseEntity<Any> {
+        val user = auth.toUser()
+        documentService.addDocument(user, docInfo, docFile)
         return ResponseEntity.ok("Added successful!")
     }
 

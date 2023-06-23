@@ -4,32 +4,30 @@ import org.springframework.web.bind.annotation.PostMapping
 import org.springframework.web.bind.annotation.RequestBody
 import org.springframework.web.bind.annotation.RequestMapping
 import org.springframework.web.bind.annotation.RestController
-import sdcc.accounting.entities.User
-import sdcc.accounting.payloads.requests.LoginRequest
-import sdcc.accounting.payloads.requests.SignupRequest
-import sdcc.accounting.payloads.responses.TokenResponse
-import sdcc.accounting.repositories.UserRepository
+import sdcc.accounting.dto.LoginDto
+import sdcc.accounting.dto.SignupDto
+import sdcc.accounting.dto.TokenDto
 import sdcc.accounting.services.HashService
 import sdcc.accounting.services.TokenService
 import sdcc.accounting.exceptions.LoginFailedException
 import sdcc.accounting.exceptions.UserAlreadyExistException
+import sdcc.accounting.services.UserService
 import kotlin.jvm.Throws
 
 @RestController
-@RequestMapping("/auth")
+@RequestMapping("/api")
 class AuthController(
     private val hashService: HashService,
     private val tokenService: TokenService,
-    private val userRepository: UserRepository,
+    private val userService: UserService,
 ) {
     @PostMapping("/login")
     @Throws(LoginFailedException::class)
-    fun login(@RequestBody payload: LoginRequest): TokenResponse {
-        val user = userRepository.findByEmail(payload.email)?: throw LoginFailedException()
-        if (!hashService.checkBcrypt(payload.password, user.password!!)) throw LoginFailedException()
-        return TokenResponse(
+    fun login(@RequestBody payload: LoginDto): TokenDto {
+        val user = userService.login(payload.email, payload.password)?: throw LoginFailedException()
+
+        return TokenDto(
             tokenService.createToken(user),
-            user.id!!,
             user.username!!,
             user.email!!
         )
@@ -37,19 +35,13 @@ class AuthController(
 
     @PostMapping("/signup")
     @Throws(UserAlreadyExistException::class)
-    fun signup(@RequestBody payload: SignupRequest): TokenResponse {
-        if (userRepository.existsByUsernameOrEmail(payload.username, payload.email))
-            throw UserAlreadyExistException()
-        val user = User()
-        user.username = payload.username
-        user.email = payload.email
-        user.password = hashService.hashBcrypt(payload.password)
-        val savedUser = userRepository.save(user)
-        return TokenResponse(
-            tokenService.createToken(savedUser),
-            savedUser.id!!,
-            savedUser.username!!,
-            savedUser.email!!
+    fun signup(@RequestBody payload: SignupDto): TokenDto {
+        val user = userService.signup(payload.email, payload.username, payload.password)?: throw UserAlreadyExistException()
+
+        return TokenDto(
+            tokenService.createToken(user),
+            user.username!!,
+            user.email!!
         )
     }
 }

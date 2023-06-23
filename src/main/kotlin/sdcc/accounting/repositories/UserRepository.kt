@@ -1,12 +1,13 @@
 package sdcc.accounting.repositories
 
 import org.springframework.data.jpa.repository.JpaRepository
-import sdcc.accounting.entities.User
+import sdcc.accounting.model.User
 
 interface UserRepository : JpaRepository<User, Int> {
 
-    fun existsByUsernameOrEmail(username: String, email: String): Boolean
+    fun existsByEmail(email: String): Boolean
+
+    fun existsByUsername(username: String): Boolean
 
     fun findByEmail(email: String): User?
-
 }
