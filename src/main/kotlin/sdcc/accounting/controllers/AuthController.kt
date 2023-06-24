@@ -22,7 +22,6 @@ class AuthController(
     private val userService: UserService,
 ) {
     @PostMapping("/login")
-    @Throws(LoginFailedException::class)
     fun login(@RequestBody payload: LoginDto): TokenDto {
         val user = userService.login(payload.email, payload.password)?: throw LoginFailedException()
 
@@ -34,7 +33,6 @@ class AuthController(
     }
 
     @PostMapping("/signup")
-    @Throws(UserAlreadyExistException::class)
     fun signup(@RequestBody payload: SignupDto): TokenDto {
         val user = userService.signup(payload.email, payload.username, payload.password)?: throw UserAlreadyExistException()
 

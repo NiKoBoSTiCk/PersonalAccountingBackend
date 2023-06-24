@@ -10,19 +10,28 @@ import sdcc.accounting.exceptions.*
 class GlobalExceptionHandler {
 
     @ExceptionHandler(
-        UserNotFoundException::class,
-        TagNotFoundException::class,
-        DocumentNotFoundException::class,
-        LoginFailedException::class,
-        UserAlreadyExistException::class,
-        InvalidTagException::class,
-        InvalidUserException::class,
-        NegativeAmountException::class,
-        YearNotValidException::class,
-        InvalidBearerTokenException::class
+            UserNotFoundException::class,
+            TagNotFoundException::class,
+            DocumentNotFoundException::class,
+            LoginFailedException::class,
+            UserAlreadyExistException::class,
+            TagNotValidException::class,
+            UserNotValidException::class,
+            NegativeAmountException::class,
+            YearNotValidException::class,
+            InvalidBearerTokenException::class,
+            DocumentWithSameNameAlreadyExistsException::class,
+            EmptyDocumentException::class,
+            FilenameNotValidException::class
     )
     fun handleException(ex: Exception): ResponseEntity<Any> {
+        if (ex is FilenameNotValidException)
+            return ResponseEntity.badRequest().build()
         if (ex is DocumentAlreadyExistsException)
+            return ResponseEntity.badRequest().build()
+        if (ex is DocumentWithSameNameAlreadyExistsException)
+            return ResponseEntity.badRequest().build()
+        if (ex is EmptyDocumentException)
             return ResponseEntity.badRequest().build()
         if (ex is UserNotFoundException)
             return ResponseEntity.notFound().build()
@@ -34,9 +43,9 @@ class GlobalExceptionHandler {
             return ResponseEntity.status(401).build()
         if (ex is UserAlreadyExistException)
             return ResponseEntity.badRequest().build()
-        if (ex is InvalidTagException)
+        if (ex is TagNotValidException)
             return ResponseEntity.badRequest().build()
-        if (ex is InvalidUserException)
+        if (ex is UserNotValidException)
             return ResponseEntity.badRequest().build()
         if (ex is NegativeAmountException)
             return ResponseEntity.badRequest().build()

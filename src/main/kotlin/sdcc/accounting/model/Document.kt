@@ -17,9 +17,6 @@ open class Document {
     @JoinColumn(name = "id_user", nullable = false)
     open var user: User? = null
 
-    @Column(name = "name", unique = true, nullable = false)
-    open var name: String? = null
-
     @Column(name = "amount", nullable = false)
     open var amount: Int? = null
 
@@ -28,6 +25,9 @@ open class Document {
 
     @Column(name = "year", nullable = false)
     open var year: Int? = null
+
+    @Column(name = "filename", nullable = false)
+    open var filename: String? = null
 
     @Lob
     @Column(name = "file", nullable = false, columnDefinition = "blob")
