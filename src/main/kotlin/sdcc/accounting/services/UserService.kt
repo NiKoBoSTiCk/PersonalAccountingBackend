@@ -3,10 +3,9 @@ package sdcc.accounting.services
 import jakarta.transaction.Transactional
 import org.springframework.stereotype.Service
 import sdcc.accounting.exceptions.LoginFailedException
-import sdcc.accounting.exceptions.UserAlreadyExistException
+import sdcc.accounting.exceptions.UserAlreadyExistsException
 import sdcc.accounting.model.User
 import sdcc.accounting.repositories.UserRepository
-import kotlin.jvm.optionals.getOrNull
 
 @Service
 class UserService(
@@ -23,8 +22,8 @@ class UserService(
 
     @Transactional
     fun signup(email: String, username: String, password: String): User? {
-        if (userRepository.existsByEmail(email)) throw UserAlreadyExistException()
-        if (userRepository.existsByUsername(username)) throw UserAlreadyExistException()
+        if (userRepository.existsByEmail(email)) throw UserAlreadyExistsException()
+        if (userRepository.existsByUsername(username)) throw UserAlreadyExistsException()
 
         val user = User()
         user.email = email

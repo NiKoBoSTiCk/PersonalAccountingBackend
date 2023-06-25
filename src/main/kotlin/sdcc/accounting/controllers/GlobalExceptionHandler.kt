@@ -14,48 +14,48 @@ class GlobalExceptionHandler {
             TagNotFoundException::class,
             DocumentNotFoundException::class,
             LoginFailedException::class,
-            UserAlreadyExistException::class,
+            UserAlreadyExistsException::class,
             TagNotValidException::class,
-            UserNotValidException::class,
-            NegativeAmountException::class,
+            DocumentBelongsToAnotherUserException::class,
+            AmountIsNegativeException::class,
             YearNotValidException::class,
             InvalidBearerTokenException::class,
-            DocumentWithSameNameAlreadyExistsException::class,
-            EmptyDocumentException::class,
+            DocumentWithSameFilenameSameUserAlreadyExistsException::class,
+            DocumentFileIsEmptyException::class,
             FilenameNotValidException::class
     )
     fun handleException(ex: Exception): ResponseEntity<Any> {
-        if (ex is FilenameNotValidException)
-            return ResponseEntity.badRequest().build()
-        if (ex is DocumentAlreadyExistsException)
-            return ResponseEntity.badRequest().build()
-        if (ex is DocumentWithSameNameAlreadyExistsException)
-            return ResponseEntity.badRequest().build()
-        if (ex is EmptyDocumentException)
-            return ResponseEntity.badRequest().build()
+        if (ex is LoginFailedException)
+            return ResponseEntity.status(401).build()
         if (ex is UserNotFoundException)
             return ResponseEntity.notFound().build()
         if (ex is TagNotFoundException)
             return ResponseEntity.notFound().build()
         if (ex is DocumentNotFoundException)
             return ResponseEntity.notFound().build()
-        if (ex is LoginFailedException)
-            return ResponseEntity.status(401).build()
-        if (ex is UserAlreadyExistException)
+        if (ex is UserAlreadyExistsException)
+            return ResponseEntity.badRequest().build()
+        if (ex is FilenameNotValidException)
+            return ResponseEntity.badRequest().build()
+        if (ex is DocumentAlreadyExistsException)
+            return ResponseEntity.badRequest().build()
+        if (ex is DocumentWithSameFilenameSameUserAlreadyExistsException)
+            return ResponseEntity.badRequest().build()
+        if (ex is DocumentFileIsEmptyException)
             return ResponseEntity.badRequest().build()
         if (ex is TagNotValidException)
             return ResponseEntity.badRequest().build()
-        if (ex is UserNotValidException)
+        if (ex is DocumentBelongsToAnotherUserException)
             return ResponseEntity.badRequest().build()
-        if (ex is NegativeAmountException)
+        if (ex is AmountIsNegativeException)
             return ResponseEntity.badRequest().build()
         if (ex is InvalidBearerTokenException)
-            return ResponseEntity.badRequest().body("Not Auth")
+            return ResponseEntity.badRequest().build()
         if (ex is YearNotValidException)
             return ResponseEntity.badRequest().build()
-        if (ex is JwtParseException)
-            return ResponseEntity.status(666).build()
+        return if (ex is JwtParseException)
+            ResponseEntity.badRequest().build()
         else
-            return ResponseEntity.internalServerError().body(ex.stackTrace)
+            ResponseEntity.internalServerError().body(ex.stackTrace)
     }
 }

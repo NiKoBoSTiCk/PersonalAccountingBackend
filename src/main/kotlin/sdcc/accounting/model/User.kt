@@ -2,23 +2,40 @@ package sdcc.accounting.model
 
 import com.fasterxml.jackson.annotation.JsonIgnore
 import jakarta.persistence.*
+import org.hibernate.Hibernate
+import org.hibernate.annotations.JdbcTypeCode
+import org.hibernate.type.SqlTypes
 
 @Entity
 @Table(name = "user", schema = "sdcc")
 open class User {
-
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name = "id", updatable = false, unique = true, nullable = false)
+    @JdbcTypeCode(SqlTypes.INTEGER)
+    @Column(name = "id", nullable = false)
     open var id: Int? = null
+        protected set
 
-    @Column(name = "username", unique = true, nullable = false, length = 50)
-    open var username: String? = null
-
-    @Column(name = "email", unique = true, nullable = false, length = 320)
+    @JdbcTypeCode(SqlTypes.VARCHAR)
+    @Column(name = "email", nullable = false, unique = true, length = 320)
     open var email: String? = null
 
-    @Column(name = "password", nullable = false)
+    @JdbcTypeCode(SqlTypes.VARCHAR)
+    @Column(name = "username", nullable = false, unique = true, length = 50)
+    open var username: String? = null
+
     @JsonIgnore
+    @JdbcTypeCode(SqlTypes.VARCHAR)
+    @Column(name = "password", nullable = false, length = 64)
     open var password: String? = null
+
+    override fun equals(other: Any?): Boolean {
+        if (this === other) return true
+        if (other == null || Hibernate.getClass(this) != Hibernate.getClass(other)) return false
+        other as User
+
+        return id != null && id == other.id
+    }
+
+    override fun hashCode(): Int = javaClass.hashCode()
 }

@@ -1,40 +1,55 @@
 package sdcc.accounting.model
 
+import com.fasterxml.jackson.annotation.JsonIgnore
 import jakarta.persistence.*
 import org.hibernate.Hibernate
+import org.hibernate.annotations.JdbcTypeCode
+import org.hibernate.type.SqlTypes
+import sdcc.accounting.dto.DocumentDto
 import java.sql.Blob
 
 @Entity
 @Table(name = "document", schema = "sdcc")
 open class Document {
-
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name = "id", updatable = false, unique = true, nullable = false)
+    @JdbcTypeCode(SqlTypes.INTEGER)
+    @Column(name = "id", nullable = false)
     open var id: Int? = null
+        protected set
 
-    @ManyToOne
+    @ManyToOne(cascade = [CascadeType.PERSIST], optional = false)
     @JoinColumn(name = "id_user", nullable = false)
     open var user: User? = null
 
+
+    @JdbcTypeCode(SqlTypes.INTEGER)
     @Column(name = "amount", nullable = false)
     open var amount: Int? = null
 
-    @Column(name = "description", nullable = true)
+
+    @JdbcTypeCode(SqlTypes.VARCHAR)
+    @Column(name = "description")
     open var description: String? = null
 
+    @JdbcTypeCode(SqlTypes.INTEGER)
     @Column(name = "year", nullable = false)
     open var year: Int? = null
 
+
+    @JdbcTypeCode(SqlTypes.VARCHAR)
     @Column(name = "filename", nullable = false)
     open var filename: String? = null
 
     @Lob
-    @Column(name = "file", nullable = false, columnDefinition = "blob")
+    @JsonIgnore
+    @JdbcTypeCode(SqlTypes.BLOB)
+    @Column(name = "file", nullable = false)
     open var file: Blob? = null
 
+    @JdbcTypeCode(SqlTypes.VARCHAR)
     @Enumerated(EnumType.STRING)
-    @Column(name = "tag", nullable = false)
+    @Column(name = "tag", nullable = false, length = 45)
     open var tag: ETag? = null
 
     override fun equals(other: Any?): Boolean {
@@ -46,4 +61,13 @@ open class Document {
     }
 
     override fun hashCode(): Int = javaClass.hashCode()
+
+    open fun toDto(): DocumentDto = DocumentDto(
+        id!!,
+        filename!!,
+        amount!!,
+        description!!,
+        year!!,
+        tag!!.name
+    )
 }

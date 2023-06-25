@@ -27,12 +27,9 @@ class DocumentService(
     fun addDocument(user: User, docInfo: DocumentDto, docFile: MultipartFile) {
         if (!docInfo.filename.matches(Regex("^[A-Za-z]{3,}\\.(?:pdf|doc|docx)\$"))) throw FilenameNotValidException()
         if (docInfo.year < 1950 || docInfo.year > LocalDate.now().year) throw YearNotValidException()
-        if (docInfo.amount < 0) throw NegativeAmountException()
-        if (docFile.isEmpty) throw EmptyDocumentException()
-        var checkTag = false
-        for (tag in ETag.values())
-            if (ETag.valueOf(docInfo.tag) == tag) checkTag = true
-        if (!checkTag) throw TagNotFoundException()
+        if (docInfo.amount < 0) throw AmountIsNegativeException()
+        if (docFile.isEmpty) throw DocumentFileIsEmptyException()
+        if (!ETag.values().any { it.name == docInfo.tag }) throw TagNotFoundException()
         if (documentRepository.existsByFilenameAndUser(docInfo.filename, user)) throw DocumentAlreadyExistsException()
 
         val newDoc = Document()
@@ -51,26 +48,23 @@ class DocumentService(
     fun removeDocument(user: User, id: Int) {
         if (!documentRepository.existsById(id)) throw DocumentNotFoundException()
         val document = documentRepository.findById(id).get()
-        if (document.user?.id != user.id) throw UserNotValidException()
+        if (document.user?.id != user.id) throw DocumentBelongsToAnotherUserException()
         documentRepository.removeById(document.id!!)
     }
 
     @Transactional
     fun updateDocument(user: User, docInfo: DocumentDto, docFile: MultipartFile) {
         if (!docInfo.filename.matches(Regex("^[A-Za-z]{3,}\\.(?:pdf|doc|docx)\$"))) throw FilenameNotValidException()
-        if (docInfo.amount < 0) throw NegativeAmountException()
+        if (docInfo.amount < 0) throw AmountIsNegativeException()
         if (docInfo.year < 1950 || docInfo.year > LocalDate.now().year) throw YearNotValidException()
         if (docInfo.id == null) throw DocumentNotFoundException()
-        var checkTag = false
-        for (tag in ETag.values())
-            if (ETag.valueOf(docInfo.tag) == tag) checkTag = true
-        if (!checkTag) throw TagNotFoundException()
+        if (!ETag.values().any { it.name == docInfo.tag }) throw TagNotFoundException()
         if (!documentRepository.existsById(docInfo.id)) throw DocumentNotFoundException()
 
         val document = documentRepository.findById(docInfo.id).get()
-        if (document.user?.id != user.id) throw UserNotValidException()
+        if (document.user?.id != user.id) throw DocumentBelongsToAnotherUserException()
         if (docInfo.filename != document.filename && documentRepository.existsByFilenameAndUser(docInfo.filename, user))
-            throw DocumentWithSameNameAlreadyExistsException()
+            throw DocumentWithSameFilenameSameUserAlreadyExistsException()
         document.filename = docInfo.filename
         document.amount = docInfo.amount
         document.year = docInfo.year
@@ -87,45 +81,59 @@ class DocumentService(
     fun downloadDocument(user: User, id: Int): DocumentFileDto? {
         if (!documentRepository.existsById(id)) throw DocumentNotFoundException()
         val document = documentRepository.findById(id).get()
-        if (document.user?.id != user.id) throw UserNotValidException()
+        if (document.user?.id != user.id) throw DocumentBelongsToAnotherUserException()
 
         val documentFile = File("$document.filename")
-        IOUtils.copy(document.file?.binaryStream, documentFile.outputStream()) //ok fino a 2GB, poi copyLarge(...)
+        IOUtils.copy(document.file?.binaryStream, documentFile.outputStream()) //ok until 2GB, then copyLarge(...)
         return DocumentFileDto(document.filename!!, documentFile)
     }
 
     @Transactional
-    fun report() {
-        //TODO
-    }
-
-    @Transactional
-    fun showAllUserDocuments(user: User): Set<Document>? {
-        return documentRepository.findAllByUser(user)
-    }
-
-    @Transactional
-    fun showUserDocumentsByTag(user: User, tag: String): Set<Document>? {
-        var checkTag = false
-        for (etag in ETag.values())
-            if (ETag.valueOf(tag) == etag) checkTag = true
-        if (!checkTag) throw TagNotFoundException()
-        return documentRepository.findAllByUserAndTag(user, ETag.valueOf(tag))
-    }
-
-    @Transactional
-    fun showUserDocumentsByYear(user: User, year: Int): Set<Document>? {
+    fun report(user: User, year: Int): Map<ETag, Int> {
         if (year < 1950 || year > LocalDate.now().year) throw YearNotValidException()
-        return documentRepository.findAllByUserAndYear(user, year)
+        val report : MutableMap<ETag, Int> = mutableMapOf()
+        if (!documentRepository.existsByUserAndYear(user, year)) return report.toMap()
+        for (tag in ETag.values()) {
+            val docList = documentRepository.findByUserAndYearAndTag(user, year, tag)
+            if (docList.isNotEmpty()) {
+                var total = 0
+                for (doc in docList)
+                    total += doc.amount!!
+                report[tag] = total
+            }
+        }
+        return report.toMap()
     }
 
     @Transactional
-    fun showUserDocumentsByYearAndTag(user: User, year: Int, tag: String): Set<Document>? {
+    fun showAllUserDocuments(user: User): List<DocumentDto> {
+        val docList = documentRepository.findByUser(user)
+        if (docList.isEmpty()) return emptyList()
+        return docList.map { doc -> doc.toDto() }
+    }
+
+    @Transactional
+    fun showUserDocumentsByTag(user: User, tag: String): List<DocumentDto> {
+        if (!ETag.values().any { it.name == tag }) throw TagNotFoundException()
+        val docList = documentRepository.findByUserAndTag(user, ETag.valueOf(tag))
+        if (docList.isEmpty()) return emptyList()
+        return docList.map { doc -> doc.toDto() }
+    }
+
+    @Transactional
+    fun showUserDocumentsByYear(user: User, year: Int): List<DocumentDto> {
         if (year < 1950 || year > LocalDate.now().year) throw YearNotValidException()
-        var checkTag = false
-        for (etag in ETag.values())
-            if (ETag.valueOf(tag) == etag) checkTag = true
-        if (!checkTag) throw TagNotFoundException()
-        return documentRepository.findAllByUserAndYearAndTag(user, year, ETag.valueOf(tag))
+        val docList = documentRepository.findByUserAndYear(user, year)
+        if (docList.isEmpty()) return emptyList()
+        return docList.map { doc -> doc.toDto() }
+    }
+
+    @Transactional
+    fun showUserDocumentsByYearAndTag(user: User, year: Int, tag: String): List<DocumentDto> {
+        if (year < 1950 || year > LocalDate.now().year) throw YearNotValidException()
+        if (!ETag.values().any { it.name == tag }) throw TagNotFoundException()
+        val docList = documentRepository.findByUserAndYearAndTag(user, year, ETag.valueOf(tag))
+        if (docList.isEmpty()) return emptyList()
+        return docList.map { doc -> doc.toDto() }
     }
 }

@@ -10,13 +10,15 @@ import sdcc.accounting.model.User
 interface DocumentRepository : JpaRepository<Document, Int> {
     fun existsByFilenameAndUser(filename: String, user: User): Boolean
 
+    fun existsByUserAndYear(user: User, year: Int): Boolean
+
     fun removeById(id: Int): Document?
 
-    fun findAllByUser(user: User): Set<Document>?
+    fun findByUser(user: User): List<Document>
 
-    fun findAllByUserAndTag(user: User, tag: ETag): Set<Document>?
+    fun findByUserAndTag(user: User, tag: ETag): List<Document>
 
-    fun findAllByUserAndYear(user: User, year: Int): Set<Document>?
+    fun findByUserAndYear(user: User, year: Int): List<Document>
 
-    fun findAllByUserAndYearAndTag(user: User, year: Int, tag: ETag): Set<Document>?
+    fun findByUserAndYearAndTag(user: User, year: Int, tag: ETag): List<Document>
 }

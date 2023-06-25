@@ -12,7 +12,6 @@ import sdcc.accounting.exceptions.*
 import sdcc.accounting.services.DocumentService
 import java.io.InputStream
 
-
 @RestController
 @RequestMapping("/api/documents")
 class DocumentController(private val documentService: DocumentService) {
@@ -27,7 +26,6 @@ class DocumentController(private val documentService: DocumentService) {
 
     @DeleteMapping
     fun deleteDocument(auth: Authentication, @RequestParam(value = "id") id: Int): ResponseEntity<Any> {
-        val user = auth.toUser()
         documentService.removeDocument(auth.toUser(), id)
         return ResponseEntity.ok("Document removed successfully!")
     }
@@ -53,8 +51,8 @@ class DocumentController(private val documentService: DocumentService) {
     }
 
     @GetMapping("/report")
-    fun getReport(auth: Authentication) {
-        //TODO
+    fun getReport(auth: Authentication, @RequestParam(value = "year") year: Int): ResponseEntity<Any> {
+        return ResponseEntity.ok(documentService.report(auth.toUser(), year))
     }
 
     @GetMapping("/all")

@@ -6,6 +6,7 @@ enum class ETag{
     TRASPORTI,
     ASSICURAZIONI,
     SPORT,
+    SCUOLA,
     SALUTE,
     RISTORANTI,
     CULTURA,
