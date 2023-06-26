@@ -3,6 +3,8 @@ package sdcc.accounting.model
 import com.fasterxml.jackson.annotation.JsonIgnore
 import jakarta.persistence.*
 import org.hibernate.Hibernate
+import org.hibernate.annotations.JdbcTypeCode
+import org.hibernate.type.SqlTypes
 import sdcc.accounting.dto.DocumentDto
 import java.sql.Blob
 
@@ -18,8 +20,9 @@ open class Document {
     @JoinColumn(name = "id_user", nullable = false)
     open var user: User? = null
 
+    @JdbcTypeCode(SqlTypes.DECIMAL)
     @Column(name = "amount", nullable = false)
-    open var amount: Int? = null
+    open var amount: Float? = null
 
     @Column(name = "description", length = 200)
     open var description: String? = null
@@ -32,7 +35,7 @@ open class Document {
 
     @Lob
     @JsonIgnore
-    @Column(name = "file", nullable = false)
+    @Column(name = "file", nullable = false, columnDefinition = "longblob")
     open var file: Blob? = null
 
     @Enumerated(EnumType.STRING)

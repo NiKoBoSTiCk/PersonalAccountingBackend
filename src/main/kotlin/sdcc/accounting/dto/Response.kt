@@ -4,4 +4,5 @@ data class TokenDto(
     var token: String,
     var username: String,
     var email: String,
-) { var tokenType = "Bearer" }
+    val tokenType: String = "Bearer",
+)

@@ -5,7 +5,7 @@ import java.io.InputStream
 data class DocumentDto(
         val id: Int?,
         val filename: String,
-        val amount: Int,
+        val amount: Float,
         val description: String,
         val year: Int,
         val tag: String

@@ -25,8 +25,13 @@ class TokenService(
         return jwtEncoder.encode(JwtEncoderParameters.from(jwsHeader, claims)).tokenValue
     }
 
-    fun parseToken(token: String): User? {
+    fun parseToken(token: String): User {
         val jwt = jwtDecoder.decode(token)
-        return userRepository.findByEmail("salvatore.romanello@hotmail.it")?: throw JwtParseException("email= ${jwt.claims["email"]}")
+        try {
+            val email = jwt.claims["email"] as String
+            return userRepository.findByEmail(email)!!
+        } catch (e: Exception) {
+            throw JwtParseException()
+        }
     }
 }
