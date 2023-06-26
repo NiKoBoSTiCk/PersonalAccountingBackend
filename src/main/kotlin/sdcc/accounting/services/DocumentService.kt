@@ -1,7 +1,6 @@
 package sdcc.accounting.services
 
 import jakarta.persistence.EntityManagerFactory
-import org.apache.tomcat.util.http.fileupload.IOUtils
 import org.hibernate.Session
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
@@ -13,7 +12,6 @@ import sdcc.accounting.model.Document
 import sdcc.accounting.model.ETag
 import sdcc.accounting.model.User
 import sdcc.accounting.repositories.DocumentRepository
-import java.io.File
 import java.time.LocalDate
 
 
@@ -33,8 +31,8 @@ class DocumentService(
         if (documentRepository.existsByFilenameAndUser(docInfo.filename, user)) throw DocumentAlreadyExistsException()
 
         val newDoc = Document()
-        newDoc.filename = docInfo.filename
         newDoc.user = user
+        newDoc.filename = docInfo.filename
         newDoc.amount = docInfo.amount
         newDoc.year = docInfo.year
         newDoc.description = docInfo.description
@@ -82,10 +80,7 @@ class DocumentService(
         if (!documentRepository.existsById(id)) throw DocumentNotFoundException()
         val document = documentRepository.findById(id).get()
         if (document.user?.id != user.id) throw DocumentBelongsToAnotherUserException()
-
-        val documentFile = File("$document.filename")
-        IOUtils.copy(document.file?.binaryStream, documentFile.outputStream()) //ok until 2GB, then copyLarge(...)
-        return DocumentFileDto(document.filename!!, documentFile)
+        return DocumentFileDto(document.filename!!, document.file?.length()!!, document.file?.binaryStream!!)
     }
 
     @Transactional

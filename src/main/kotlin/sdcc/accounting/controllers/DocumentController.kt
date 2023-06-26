@@ -1,6 +1,7 @@
 package sdcc.accounting.controllers
 
 import org.springframework.core.io.InputStreamResource
+import org.springframework.http.HttpHeaders
 import org.springframework.http.MediaType
 import org.springframework.http.ResponseEntity
 import org.springframework.security.core.Authentication
@@ -10,7 +11,6 @@ import sdcc.accounting.config.toUser
 import sdcc.accounting.dto.DocumentDto
 import sdcc.accounting.exceptions.*
 import sdcc.accounting.services.DocumentService
-import java.io.InputStream
 
 @RestController
 @RequestMapping("/api/documents")
@@ -42,12 +42,16 @@ class DocumentController(private val documentService: DocumentService) {
     @ResponseBody
     fun downloadDocument(auth: Authentication, @RequestParam(value = "id") id: Int): ResponseEntity<InputStreamResource> {
         val docFile = documentService.downloadDocument(auth.toUser(), id)
-        val ext = docFile?.file?.extension
+        val ext = docFile?.filename?.substringAfter(".")
         val contentType = if (ext == "pdf") MediaType.APPLICATION_PDF else MediaType.APPLICATION_OCTET_STREAM
-        val inputStream = docFile?.file?.inputStream() as InputStream
+        val inputStream = docFile?.file!!
+        val headers = HttpHeaders()
+        headers.set("Content-Disposition", String.format("attachment; filename=${docFile.filename}"))
         return ResponseEntity.ok()
-                .contentType(contentType)
-                .body(InputStreamResource(inputStream))
+            .headers(headers)
+            .contentType(contentType)
+            .contentLength(docFile.size)
+            .body(InputStreamResource(inputStream))
     }
 
     @GetMapping("/report")

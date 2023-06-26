@@ -1,6 +1,6 @@
 package sdcc.accounting.dto
 
-import java.io.File
+import java.io.InputStream
 
 data class DocumentDto(
         val id: Int?,
@@ -12,6 +12,7 @@ data class DocumentDto(
 )
 
 data class DocumentFileDto(
-        val filename: String,
-        val file: File
+    val filename: String,
+    val size: Long,
+    val file: InputStream
 )

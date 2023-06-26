@@ -11,21 +11,16 @@ import org.hibernate.type.SqlTypes
 open class User {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @JdbcTypeCode(SqlTypes.INTEGER)
     @Column(name = "id", nullable = false)
     open var id: Int? = null
-        protected set
 
-    @JdbcTypeCode(SqlTypes.VARCHAR)
     @Column(name = "email", nullable = false, unique = true, length = 320)
     open var email: String? = null
 
-    @JdbcTypeCode(SqlTypes.VARCHAR)
     @Column(name = "username", nullable = false, unique = true, length = 50)
     open var username: String? = null
 
     @JsonIgnore
-    @JdbcTypeCode(SqlTypes.VARCHAR)
     @Column(name = "password", nullable = false, length = 64)
     open var password: String? = null
 
