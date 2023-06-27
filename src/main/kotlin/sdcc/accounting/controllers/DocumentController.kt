@@ -14,7 +14,8 @@ import sdcc.accounting.services.DocumentService
 
 @RestController
 @RequestMapping("/api/documents")
-class DocumentController(private val documentService: DocumentService) {
+class
+DocumentController(private val documentService: DocumentService) {
 
     @PostMapping(consumes = ["multipart/form-data"])
     fun createDocument(auth: Authentication,

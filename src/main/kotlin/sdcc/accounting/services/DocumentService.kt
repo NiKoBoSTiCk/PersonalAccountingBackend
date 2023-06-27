@@ -13,6 +13,7 @@ import sdcc.accounting.model.ETag
 import sdcc.accounting.model.User
 import sdcc.accounting.repositories.DocumentRepository
 import java.time.LocalDate
+import java.util.*
 
 
 @Service
@@ -27,7 +28,7 @@ class DocumentService(
         if (docInfo.year < 1950 || docInfo.year > LocalDate.now().year) throw YearNotValidException()
         if (docInfo.amount < 0) throw AmountIsNegativeException()
         if (docFile.isEmpty) throw DocumentFileIsEmptyException()
-        if (!ETag.values().any { it.name == docInfo.tag }) throw TagNotFoundException()
+        if (!ETag.values().any { it.name == docInfo.tag.uppercase(Locale.getDefault()) }) throw TagNotFoundException()
         if (documentRepository.existsByFilenameAndUser(docInfo.filename, user)) throw DocumentAlreadyExistsException()
 
         val newDoc = Document()
@@ -36,7 +37,7 @@ class DocumentService(
         newDoc.amount = docInfo.amount
         newDoc.year = docInfo.year
         newDoc.description = docInfo.description
-        newDoc.tag = ETag.valueOf(docInfo.tag)
+        newDoc.tag = ETag.valueOf(docInfo.tag.uppercase(Locale.getDefault()))
         val session = entityManagerFactory.createEntityManager().delegate as Session
         newDoc.file = session.lobHelper.createBlob(docFile.inputStream, docFile.size)
         documentRepository.save(newDoc)
@@ -56,7 +57,7 @@ class DocumentService(
         if (docInfo.amount < 0) throw AmountIsNegativeException()
         if (docInfo.year < 1950 || docInfo.year > LocalDate.now().year) throw YearNotValidException()
         if (docInfo.id == null) throw DocumentNotFoundException()
-        if (!ETag.values().any { it.name == docInfo.tag }) throw TagNotFoundException()
+        if (!ETag.values().any { it.name == docInfo.tag.uppercase(Locale.getDefault()) }) throw TagNotFoundException()
         if (!documentRepository.existsById(docInfo.id)) throw DocumentNotFoundException()
 
         val document = documentRepository.findById(docInfo.id).get()
@@ -67,7 +68,7 @@ class DocumentService(
         document.amount = docInfo.amount
         document.year = docInfo.year
         document.description = docInfo.description
-        document.tag = ETag.valueOf(docInfo.tag)
+        document.tag = ETag.valueOf(docInfo.tag.uppercase(Locale.getDefault()))
         if (!docFile.isEmpty) {
             val session = entityManagerFactory.createEntityManager().delegate as Session
             document.file = session.lobHelper.createBlob(docFile.inputStream, docFile.size)
@@ -90,12 +91,10 @@ class DocumentService(
         if (!documentRepository.existsByUserAndYear(user, year)) return report.toMap()
         for (tag in ETag.values()) {
             val docList = documentRepository.findByUserAndYearAndTag(user, year, tag)
-            if (docList.isNotEmpty()) {
-                var total = 0.00f
-                for (doc in docList)
-                    total += doc.amount!!
-                report[tag] = total
-            }
+            var total = 0.00f
+            for (doc in docList)
+                total += doc.amount!!
+            report[tag] = total
         }
         return report.toMap()
     }
@@ -109,8 +108,8 @@ class DocumentService(
 
     @Transactional
     fun showUserDocumentsByTag(user: User, tag: String): List<DocumentDto> {
-        if (!ETag.values().any { it.name == tag }) throw TagNotFoundException()
-        val docList = documentRepository.findByUserAndTag(user, ETag.valueOf(tag))
+        if (!ETag.values().any { it.name == tag.uppercase(Locale.getDefault()) }) throw TagNotFoundException()
+        val docList = documentRepository.findByUserAndTag(user, ETag.valueOf(tag.uppercase(Locale.getDefault())))
         if (docList.isEmpty()) return emptyList()
         return docList.map { doc -> doc.toDto() }
     }
@@ -126,8 +125,8 @@ class DocumentService(
     @Transactional
     fun showUserDocumentsByYearAndTag(user: User, year: Int, tag: String): List<DocumentDto> {
         if (year < 1950 || year > LocalDate.now().year) throw YearNotValidException()
-        if (!ETag.values().any { it.name == tag }) throw TagNotFoundException()
-        val docList = documentRepository.findByUserAndYearAndTag(user, year, ETag.valueOf(tag))
+        if (!ETag.values().any { it.name == tag.uppercase(Locale.getDefault()) }) throw TagNotFoundException()
+        val docList = documentRepository.findByUserAndYearAndTag(user, year, ETag.valueOf(tag.uppercase(Locale.getDefault())))
         if (docList.isEmpty()) return emptyList()
         return docList.map { doc -> doc.toDto() }
     }
