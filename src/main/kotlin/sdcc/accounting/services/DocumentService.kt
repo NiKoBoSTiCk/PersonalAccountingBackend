@@ -48,7 +48,7 @@ class DocumentService(
         if (!documentRepository.existsById(id)) throw DocumentNotFoundException()
         val document = documentRepository.findById(id).get()
         if (document.user?.id != user.id) throw DocumentBelongsToAnotherUserException()
-        documentRepository.removeById(document.id!!)
+        documentRepository.removeById(id)
     }
 
     @Transactional

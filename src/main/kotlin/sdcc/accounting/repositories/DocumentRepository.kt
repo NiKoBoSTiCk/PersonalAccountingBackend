@@ -12,7 +12,7 @@ interface DocumentRepository : JpaRepository<Document, Int> {
 
     fun existsByUserAndYear(user: User, year: Int): Boolean
 
-    fun removeById(id: Int): Document?
+    fun removeById(id: Int)
 
     fun findByUser(user: User): List<Document>
 
