@@ -24,7 +24,7 @@ class DocumentService(
 
     @Transactional
     fun addDocument(user: User, docInfo: DocumentDto, docFile: MultipartFile) {
-        if (!docInfo.filename.matches(Regex("^[A-Za-z0-9]{3,}\\.(?:pdf|doc|docx)\$"))) throw FilenameNotValidException()
+        if (!docInfo.filename.matches(Regex("^[_A-Za-z0-9]{3,}\\.(?:pdf|doc|docx)\$"))) throw FilenameNotValidException()
         if (docInfo.year < 1950 || docInfo.year > LocalDate.now().year) throw YearNotValidException()
         if (docInfo.amount < 0) throw AmountIsNegativeException()
         if (docFile.isEmpty) throw DocumentFileIsEmptyException()
@@ -53,7 +53,7 @@ class DocumentService(
 
     @Transactional
     fun updateDocument(user: User, docInfo: DocumentDto, docFile: MultipartFile) {
-        if (!docInfo.filename.matches(Regex("^[A-Za-z0-9]{3,}\\.(?:pdf|doc|docx)\$"))) throw FilenameNotValidException()
+        if (!docInfo.filename.matches(Regex("^[_A-Za-z0-9]{3,}\\.(?:pdf|doc|docx)\$"))) throw FilenameNotValidException()
         if (docInfo.amount < 0) throw AmountIsNegativeException()
         if (docInfo.year < 1950 || docInfo.year > LocalDate.now().year) throw YearNotValidException()
         if (docInfo.id == null) throw DocumentNotFoundException()
@@ -88,7 +88,6 @@ class DocumentService(
     fun report(user: User, year: Int): Map<ETag, Float> {
         if (year < 1950 || year > LocalDate.now().year) throw YearNotValidException()
         val report : MutableMap<ETag, Float> = mutableMapOf()
-        if (!documentRepository.existsByUserAndYear(user, year)) return report.toMap()
         for (tag in ETag.values()) {
             val docList = documentRepository.findByUserAndYearAndTag(user, year, tag)
             var total = 0.00f
