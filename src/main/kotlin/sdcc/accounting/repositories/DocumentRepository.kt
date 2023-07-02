@@ -10,8 +10,6 @@ import sdcc.accounting.model.User
 interface DocumentRepository : JpaRepository<Document, Int> {
     fun existsByFilenameAndUser(filename: String, user: User): Boolean
 
-    fun existsByUserAndYear(user: User, year: Int): Boolean
-
     fun removeById(id: Int)
 
     fun findByUser(user: User): List<Document>
