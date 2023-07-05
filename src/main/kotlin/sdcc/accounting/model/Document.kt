@@ -7,6 +7,7 @@ import org.hibernate.annotations.JdbcTypeCode
 import org.hibernate.type.SqlTypes
 import sdcc.accounting.dto.DocumentDto
 import java.sql.Blob
+import java.util.*
 
 @Entity
 @Table(name = "document", schema = "sdcc")
@@ -58,6 +59,10 @@ open class Document {
         amount!!,
         description!!,
         year!!,
-        tag!!.name
+        tag!!.name.replaceFirstChar {
+            if (it.isLowerCase())
+                it.titlecase(Locale.getDefault())
+            else it.toString()
+        }
     )
 }

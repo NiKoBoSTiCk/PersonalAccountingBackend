@@ -59,11 +59,11 @@ class DocumentService(
         if (docInfo.id == null) throw DocumentNotFoundException()
         if (!ETag.values().any { it.name == docInfo.tag.uppercase(Locale.getDefault()) }) throw TagNotFoundException()
         if (!documentRepository.existsById(docInfo.id)) throw DocumentNotFoundException()
-
         val document = documentRepository.findById(docInfo.id).get()
         if (document.user?.id != user.id) throw DocumentBelongsToAnotherUserException()
         if (docInfo.filename != document.filename && documentRepository.existsByFilenameAndUser(docInfo.filename, user))
             throw DocumentWithSameFilenameSameUserAlreadyExistsException()
+
         document.filename = docInfo.filename
         document.amount = docInfo.amount
         document.year = docInfo.year
